@@ -212,4 +212,123 @@ require_once __DIR__ . '/../../includes/header.php';
                                         <option value="<?php echo $category->id; ?>" <?php echo $product_data['category_id'] == $category->id ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($category->name); ?>
                                         </option>
-                                    <?php endforeach
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="price" class="form-label">Price (RM)</label>
+                                <input type="number" step="0.01" class="form-control <?php echo isset($errors['price']) ? 'is-invalid' : ''; ?>" id="price" name="price" value="<?php echo htmlspecialchars($product_data['price']); ?>" required>
+                                <?php if (isset($errors['price'])): ?>
+                                    <div class="invalid-feedback"><?php echo $errors['price']; ?></div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="stock_quantity" class="form-label">Stock Quantity</label>
+                                <input type="number" class="form-control <?php echo isset($errors['stock_quantity']) ? 'is-invalid' : ''; ?>" id="stock_quantity" name="stock_quantity" value="<?php echo htmlspecialchars($product_data['stock_quantity']); ?>" required>
+                                <?php if (isset($errors['stock_quantity'])): ?>
+                                    <div class="invalid-feedback"><?php echo $errors['stock_quantity']; ?></div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="active" <?php echo $product_data['status'] === 'active' ? 'selected' : ''; ?>>Active</option>
+                                    <option value="inactive" <?php echo $product_data['status'] === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="image" class="form-label">Main Image</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                <?php if ($product_data['image_url']): ?>
+                                    <div class="mt-2">
+                                        <img src="<?php echo BASE_URL . 'assets/images/products/' . $product_data['image_url']; ?>" alt="Current Image" width="100" class="img-thumbnail">
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="additional_images" class="form-label">Additional Images</label>
+                            <input type="file" class="form-control" id="additional_images" name="additional_images[]" multiple accept="image/*">
+                            
+                            <?php if (!empty($product_images)): ?>
+                                <div class="mt-3">
+                                    <h6>Current Additional Images</h6>
+                                    <div class="row">
+                                        <?php foreach ($product_images as $image): ?>
+                                            <div class="col-md-2 mb-3">
+                                                <div class="position-relative">
+                                                    <img src="<?php echo BASE_URL . 'assets/images/products/' . $image->image_url; ?>" alt="Additional Image" class="img-thumbnail" width="100">
+                                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 delete-image" data-id="<?php echo $image->id; ?>">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Update Product</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('.delete-image').click(function() {
+        const imageId = $(this).data('id');
+        
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '<?php echo BASE_URL; ?>admin/products/delete_image.php',
+                    method: 'POST',
+                    data: { id: imageId },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire(
+                                'Deleted!',
+                                'Image has been deleted.',
+                                'success'
+                            ).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                response.message,
+                                'error'
+                            );
+                        }
+                    },
+                    error: function() {
+                        Swal.fire(
+                            'Error!',
+                            'Something went wrong.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    });
+});
+</script>
+
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
